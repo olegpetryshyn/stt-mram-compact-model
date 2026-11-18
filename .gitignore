@@ -2,3 +2,5 @@
 *.log
 *.raw
 __pycache__/
+*.tar.gz
+mram_simulation_framework/
