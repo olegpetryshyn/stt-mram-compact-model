@@ -1,5 +1,5 @@
 
-
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## References & Acknowledgments
 
@@ -18,3 +18,7 @@
 
 ### Material & Device Parameters
 * Physical and geometrical parameters for $\text{CoFeB/MgO}$-based perpendicular MTJs ($M_s$, $\alpha$, $\text{TMR}_0$, $t_{\text{ox}}$, $K_i$) are calibrated against standard literature values *(add specific experimental or compact-model paper citations here once parameters are finalized)*.
+
+
+## License
+This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
