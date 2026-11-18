@@ -1,0 +1,15 @@
+`include "disciplines.vams"
+`include "constants.vams"
+
+module magn_module(p, n);
+    inout p, n;
+    electrical p, n;
+    parameter real rval = 1000.0 from (0:inf);
+    parameter real mu_0 = 4*pi*10^(-7) from (0:inf);
+
+    parameter distance 
+    analog begin
+       // biot savat law for differential B
+       
+    end
+endmodule

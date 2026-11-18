@@ -1,0 +1,13 @@
+* testbench for resistence
+V1 in 0 DC 5
+N1 in 0 mod_res
+
+.model mod_res my_resistor rval=2000
+
+.control
+    pre_osdi resistence.osdi
+    op
+    print v(in) i(V1)
+.endc
+
+.end
