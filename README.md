@@ -17,7 +17,7 @@
 * **ARM MRAM Simulation Framework:** Referenced for simulation architecture and benchmarking structure (`https://github.com/ARM-software/mram_simulation_framework`).
 
 ### Material & Device Parameters
-* Physical and geometrical parameters for $\text{CoFeB/MgO}$-based perpendicular MTJs ($M_s$, $\alpha$, $\text{TMR}_0$, $t_{\text{ox}}$, $K_i$) are calibrated against standard literature values *(add specific experimental or compact-model paper citations here once parameters are finalized)*.
+* Physical and geometrical parameters for $\text{CoFeB/MgO}$-based perpendicular MTJs ($M_s$, $\alpha$, $\text{TMR}_0$, $t_{\text{ox}}$, $K_i$) are calibrated against standard literature values.
 
 
 ## License
