@@ -22,7 +22,7 @@ This repository provides a comprehensive description and compact modeling, via V
 - ngspice with OSDI support
 - A suitable C/C++ build toolchain
 
-### Build
+### Build Command
 
 ```sh
 openvaf stt_mram.va
