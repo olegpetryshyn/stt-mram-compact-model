@@ -3,7 +3,7 @@
 
 
 # STT-MRAM Compact Model
-This repository provides a comprehensive description and compact modeling, via Verilog-A and OpenVAF chain, of a STT-MRAM Cell. The base version objective consist in creating a model of a single cell, using standard literature parameters and materials, with the derivation of foundamental equation done separately. See [additional improvements] section for more indications.
+This repository provides a comprehensive description and compact modeling, via Verilog-A and OpenVAF chain, of a STT-MRAM Cell. The base version objective consist in creating a model of a single cell, using standard literature parameters and materials, with the derivation of foundamental equation done separately. Future version will elaborate a more complex model( See [additional improvements] (#Additional Improvements) section for more indications).
 
 
 
@@ -67,7 +67,7 @@ the constant used in the verilog-A model follow standard literature values, desc
 | Boltzmann constant (k<sub>B</sub>) | KB | 1.380649e-23 | J/K |
 
 ---
-
+## Additional Improvements
 ## References & Acknowledgments
 
 ### Theoretical Foundation
