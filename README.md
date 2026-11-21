@@ -72,7 +72,9 @@ the constant used in the verilog-A model follow standard literature values, desc
 - Extend the model to support cell-to-cell coupling
 - Add complete simulation examples
 - Validate parameters using experimental data
-- 
+
+
+
 ## References & Acknowledgments
 
 ### Theoretical Foundation
