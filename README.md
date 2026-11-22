@@ -30,7 +30,7 @@ $$\text{GMR} = \frac{R_{AP} - R_P}{R_P}$$
 
 ### Thermal activation effect simulation
 
-$$\frac{d\mathbf{m}}{dt} = -\frac{\gamma}{1 + \alpha^2} \left[ \mathbf{m} \times \left( \mathbf{H}_{\text{eff}} + \mathbf{H}_{\text{th}} \right) \right] - \frac{\gamma \alpha}{1 + \alpha^2} \left\{ \mathbf{m} \times \left[ \mathbf{m} \times \left( \mathbf{H}_{\text{eff}} + \mathbf{H}_{\text{th}} \right) \right] \right\}$$
+$$\frac{d\mathbf{m}}{dt} = -\frac{\gamma}{1 + \alpha^2} \left[ \mathbf{m} \times \left( \mathbf{H}_{\text{eff}} + \mathbf{H}_{\text{th}} \right) \right] - \frac{\gamma \alpha}{1 + \alpha^2} \left( \mathbf{m} \times \left[ \mathbf{m} \times \left( \mathbf{H}_{\text{eff}} + \mathbf{H}_{\text{th}} \right) \right] \right)$$
 
 **Discrete:**
 
@@ -62,37 +62,37 @@ ngspice -b example.cir
 
 ## Modeling constants used
 
-The constant used in the verilog-A model follow standard literature values, described below:
+The constants used in the Verilog-A model follow standard literature values, described below:
 
 ### 1. Magnetic and Geometrical Parameters (LLG Dynamics)
 
 | Parameter | Verilog-A Symbol | Nominal Value | Units (SI) | Description |
 | :--- | :--- | :--- | :--- | :--- |
-| Nanopillar diameter | `d` | `40e-9` | $\text{m}$ | Valid in the macrospin regime (`d < 50 nm`) |
-| Free layer thickness | `t_fl` | `1.3e-9` | $\text{m}$ | Thickness of the CoFeB free layer |
-| Saturation magnetization | `Ms` | `1.257e6` | $\text{A/m}$ | Equivalent to $\mu_0 M_s = 1.58\text{ T}$ |
-| Interfacial anisotropy | `Ki` | `1.3e-3` | $\text{J/m}^2$ | CoFeB/MgO interfacial energy density |
-| Gilbert damping | `alpha` | `0.027` | — | Effective damping constant |
-| Gyromagnetic ratio | `GAMMA` | `1.76e11` | $\text{rad}/(\text{s}\cdot\text{T})$ | Electron gyromagnetic constant |
+| Nanopillar diameter | d | 40e-9 | $\text{m}$ | Valid in the macrospin regime ($d < 50\text{ nm}$) |
+| Free layer thickness | t_fl | 1.3e-9 | $\text{m}$ | Thickness of the CoFeB free layer |
+| Saturation magnetization | Ms | 1.257e6 | $\text{A/m}$ | Equivalent to $\mu_0 M_s = 1.58\text{ T}$ |
+| Interfacial anisotropy | Ki | 1.3e-3 | $\text{J/m}^2$ | CoFeB/MgO interfacial energy density |
+| Gilbert damping | alpha | 0.027 | — | Effective damping constant |
+| Gyromagnetic ratio | GAMMA | 1.76e11 | $\text{rad}/(\text{s}\cdot\text{T})$ | Electron gyromagnetic constant |
 
 ### 2. Electrical and Transport Parameters (Jullière & STT)
 
 | Parameter | Verilog-A Symbol | Nominal Value | Units (SI) | Description |
 | :--- | :--- | :--- | :--- | :--- |
-| Zero-bias TMR | `TMR0` | `1.2` | — | Tunnel magnetoresistance ratio (120%) |
-| Resistance-Area product | `RA_P` | `5.0e-12` | $\Omega\cdot\text{m}^2$ | Equivalent to $5\ \Omega\cdot\mu\text{m}^2$ (parallel state) |
-| TMR half-bias voltage | `Vh` | `0.5` | $\text{V}$ | Bias voltage at which $\text{TMR}(V_h) = \text{TMR}_0 / 2$ |
-| Oxide barrier thickness | `t_ox` | `0.85e-9` | $\text{m}$ | Thickness of the MgO tunnel barrier |
-| Spin polarization | `P` | `0.58` | — | Tunneling current spin polarization factor |
+| Zero-bias TMR | TMR0 | 1.2 | — | Tunnel magnetoresistance ratio (120%) |
+| Resistance-Area product | RA_P | 5.0e-12 | $\Omega\cdot\text{m}^2$ | Equivalent to $5\ \Omega\cdot\mu\text{m}^2$ (parallel state) |
+| TMR half-bias voltage | Vh | 0.5 | $\text{V}$ | Bias voltage at which $\text{TMR}(V_h) = \text{TMR}_0 / 2$ |
+| Oxide barrier thickness | t_ox | 0.85e-9 | $\text{m}$ | Thickness of the MgO tunnel barrier |
+| Spin polarization | P | 0.58 | — | Tunneling current spin polarization factor |
 
-### 3. Universal Constants (`localparam`)
+### 3. Universal Constants (localparam)
 
 | Constant | Verilog-A Symbol | Value (SI) | Units |
 | :--- | :--- | :--- | :--- |
-| Vacuum permeability ($\mu_0$) | `MU0` | `1.256637061e-6` | $\text{H/m}$ |
-| Reduced Planck constant ($\hbar$) | `HBAR` | `1.054571817e-34` | $\text{J}\cdot\text{s}$ |
-| Elementary charge ($e$) | `Q_E` | `1.602176634e-19` | $\text{C}$ |
-| Boltzmann constant ($k_B$) | `KB` | `1.380649e-23` | $\text{J/K}$ |
+| Vacuum permeability ($\mu_0$) | MU0 | 1.256637061e-6 | $\text{H/m}$ |
+| Reduced Planck constant ($\hbar$) | HBAR | 1.054571817e-34 | $\text{J}\cdot\text{s}$ |
+| Elementary charge ($e$) | Q_E | 1.602176634e-19 | $\text{C}$ |
+| Boltzmann constant ($k_B$) | KB | 1.380649e-23 | $\text{J/K}$ |
 
 ---
 
