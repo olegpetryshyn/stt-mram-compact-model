@@ -1,0 +1,60 @@
+
+
+`include "disciplines.vams"
+`include "constants.vams"
+
+module mtj_pma (p,n,mtz_out)
+
+    // declare all module parameter as electrical to enable ddt usage
+    electrical p,n,mtz_out;
+
+    // internal polar node 
+    electrical n_theta;
+
+       // Geometrical and magnetic parameters
+        parameter real d = 40e-9;  
+        parameter real t_fl = 1.3e-9;
+        parameter real Ms = 1.257e6;
+        parameter real Ki = 1.3e-3;
+        parameter real alpha = 0.027;
+        parameter real GAMMA = 1.76e11;
+
+        // Electrical and transport parameters
+        parameter real TMR0 = 1.2;
+        parameter real RA_P = 5e-12;
+        parameter real Vh = 0.5;
+        parameter real t_ox = 0.85e-9;
+        parameter real P = 0.58;
+
+        // Universal constants
+        parameter real MU0 = 1.2566e-6;
+        parameter real HBAR = 1.0546e-34;
+        parameter real Q_E = 1.6022e-19;
+        parameter real KB = 1.3806e-23;
+
+    real area, theta_init, theta, mz;
+    real v_mtj, tmr_eff, g_p, g_ap, g_eff, i_mtj;
+    real J, H_stt, dtheta_dt;
+
+    area = PI*d*d/4;
+    theta = (theta_init> 0)? theta_init : 
+
+
+    // following the verilog-a simulation best practice
+    // theta is never 0 or PI, but a value a little 
+    // higher or lower
+
+    theta = theta_init + V(n_theta);
+    if (theta < theta_init) 
+        theta =theta_init;
+    if (theta> PI-theta_init)
+        theta = PI-theta_init
+
+
+    // slonski model
+    v_mtj = V(p,n);
+    
+    tmr_eff = TMR0 /(pow())
+
+
+    I(p,n) <+ i_mtj; // current transient
