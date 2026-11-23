@@ -95,7 +95,18 @@ The constants used in the Verilog-A model follow standard literature values, des
 | Boltzmann constant ($k_B$) | KB | 1.380649e-23 | $\text{J/K}$ |
 
 ---
+**Status:** Active Early Development
 
+Physics-based compact model of an STT-MRAM cell targeting open-source SPICE simulators (`ngspice` via `OpenVAF`).
+
+## Current Implementation
+- [x] Static MTJ resistance model (`src/mtj_static.va`) with bias-dependent TMR ($V_h$) and Slonczewski conductance formulation.
+
+## Roadmap
+- [ ] OpenVAF compilation & `ngspice` DC sweep testbench (P vs AP I–V curves)
+- [ ] LLGS magnetization dynamics (macrospin approximation)
+- [ ] Thermal stability & switching current verification
+- [ ] 
 ## Additional Improvements
 
 - Improve thermal-effect modeling
@@ -104,6 +115,8 @@ The constants used in the Verilog-A model follow standard literature values, des
 - Validate parameters using experimental data
 
 ---
+
+
 
 ## References & Acknowledgments
 
