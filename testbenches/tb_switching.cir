@@ -1,0 +1,26 @@
+* STT-MRAM p-MTJ Switching Testbench (P -> AP -> P)
+.control
+pre_osdi ../models/mtj_pma.osdi
+tran 0.05n 40n
+
+* Export clean white-background SVG
+set hcopydevtype=svg
+set color0=white
+set color1=black
+set color2=blue
+set color3=red
+set xbrushwidth=3
+hardcopy ../docs/switching_waveform.svg v(in) v(mz)
+
+* Show interactive plot
+plot v(in) v(mz)
+.endc
+
+* Bipolar write pulse: +1.0 V (5ns-15ns) to write AP, -1.0 V (25ns-35ns) to write P
+Vin in 0 PWL(0n 0 4.9n 0 5n 1.0 15n 1.0 15.1n 0 24.9n 0 25n -1.0 35n -1.0 35.1n 0 40n 0)
+
+* Instantiate p-MTJ device
+Nmtj in 0 mz mtj_pma
+
+.model mtj_pma mtj_pma init_state=0
+.end

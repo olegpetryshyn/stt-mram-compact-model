@@ -1,60 +1,83 @@
-
-
 `include "disciplines.vams"
 `include "constants.vams"
 
-module mtj_pma (p,n,mtz_out)
+module mtj_pma(p, n, mz_out);
+    inout p, n;
+    output mz_out;
+    electrical p, n, mz_out;
 
-    // declare all module parameter as electrical to enable ddt usage
-    electrical p,n,mtz_out;
-
-    // internal polar node 
+    // Internal state node representing deviation of polar angle theta
     electrical n_theta;
 
-       // Geometrical and magnetic parameters
-        parameter real d = 40e-9;  
-        parameter real t_fl = 1.3e-9;
-        parameter real Ms = 1.257e6;
-        parameter real Ki = 1.3e-3;
-        parameter real alpha = 0.027;
-        parameter real GAMMA = 1.76e11;
+    // Geometrical and magnetic parameters
+    parameter real d     = 40e-9    from (0:inf);     // Pillar diameter [m]
+    parameter real t_fl  = 1.3e-9   from (0:inf);     // Free layer thickness [m]
+    parameter real Ms    = 1.257e6  from (0:inf);     // Saturation magnetization [A/m]
+    parameter real Ki    = 1.3e-3   from (0:inf);     // Interfacial anisotropy [J/m^2]
+    parameter real alpha = 0.027    from (0:inf);     // Gilbert damping factor
+    parameter real GAMMA = 1.76e11  from (0:inf);     // Gyromagnetic ratio [rad/(s*T)]
 
-        // Electrical and transport parameters
-        parameter real TMR0 = 1.2;
-        parameter real RA_P = 5e-12;
-        parameter real Vh = 0.5;
-        parameter real t_ox = 0.85e-9;
-        parameter real P = 0.58;
+    // Initial state: 0 = Parallel (P, mz ~ +1), 1 = Antiparallel (AP, mz ~ -1)
+    parameter integer init_state = 0 from [0:1];
+    parameter real theta_min = 1e-3  from (0:0.5);    // Thermal fluctuation floor [rad]
 
-        // Universal constants
-        parameter real MU0 = 1.2566e-6;
-        parameter real HBAR = 1.0546e-34;
-        parameter real Q_E = 1.6022e-19;
-        parameter real KB = 1.3806e-23;
+    // Electrical and transport parameters
+    parameter real TMR0  = 1.2      from [0:inf);     // Zero-bias TMR ratio
+    parameter real RA_P  = 5e-12    from (0:inf);     // Resistance-area product (P) [Ohm*m^2]
+    parameter real Vh    = 0.5      from (0:inf);     // Half-TMR bias voltage [V]
+    parameter real P     = 0.58     from (0:1];       // Spin polarization factor
 
-    real area, theta_init, theta, mz;
+    // Physical constants
+    parameter real MU0   = 1.256637e-6;
+    parameter real HBAR  = 1.054572e-34;
+    parameter real Q_E   = 1.602176e-19;
+
+    real area, theta_0, theta, mz;
     real v_mtj, tmr_eff, g_p, g_ap, g_eff, i_mtj;
-    real J, H_stt, dtheta_dt;
+    real J, H_keff, H_stt, dtheta_dt;
 
-    area = PI*d*d/4;
-    theta = (theta_init> 0)? theta_init : 
+    analog begin
+        area = 0.25 * `M_PI * d * d;
 
+        // Initial angle offset from poles (0 or PI) to enable STT switching
+        theta_0 = (init_state == 0) ? theta_min : (`M_PI - theta_min);
 
-    // following the verilog-a simulation best practice
-    // theta is never 0 or PI, but a value a little 
-    // higher or lower
+        // State variable clamping within [theta_min, PI - theta_min]
+        theta = theta_0 + V(n_theta);
+        if (theta < theta_min)
+            theta = theta_min;
+        else if (theta > `M_PI - theta_min)
+            theta = `M_PI - theta_min;
 
-    theta = theta_init + V(n_theta);
-    if (theta < theta_init) 
-        theta =theta_init;
-    if (theta> PI-theta_init)
-        theta = PI-theta_init
+        mz = cos(theta);
 
+        // Bias-dependent TMR and Slonczewski conductance
+        v_mtj   = V(p, n);
+        tmr_eff = TMR0 / (1.0 + pow(v_mtj / Vh, 2));
 
-    // slonski model
-    v_mtj = V(p,n);
-    
-    tmr_eff = TMR0 /(pow())
+        g_p   = area / RA_P;
+        g_ap  = g_p / (1.0 + tmr_eff);
+        g_eff = 0.5 * (g_p + g_ap) + 0.5 * (g_p - g_ap) * mz;
 
+        i_mtj = g_eff * v_mtj;
+        J     = i_mtj / area;
 
-    I(p,n) <+ i_mtj; // current transient
+        // Effective perpendicular anisotropy field & Slonczewski STT term
+        H_keff = (2.0 * Ki) / (MU0 * Ms * t_fl) - Ms;
+        H_stt  = (HBAR * P * J) / (2.0 * Q_E * MU0 * Ms * t_fl);
+
+        // 1D macrospin LLGS polar angle dynamics
+        dtheta_dt = (GAMMA / (1.0 + alpha * alpha)) * sin(theta) * (H_stt - alpha * H_keff * mz);
+
+        // Electrical port and ODE integration (with anti-windup clamping & DC path)
+        I(p, n)    <+ i_mtj;
+        I(n_theta) <+ ddt(V(n_theta)) - dtheta_dt + 1e-12 * V(n_theta);
+        if (theta_0 + V(n_theta) < theta_min)
+            I(n_theta) <+ 1e6 * (theta_0 + V(n_theta) - theta_min);
+        else if (theta_0 + V(n_theta) > `M_PI - theta_min)
+            I(n_theta) <+ 1e6 * (theta_0 + V(n_theta) - (`M_PI - theta_min));
+
+        // Normalized out-of-plane magnetization monitor node
+        V(mz_out)  <+ mz;
+    end
+endmodule
