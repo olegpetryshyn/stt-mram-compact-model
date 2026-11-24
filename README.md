@@ -87,7 +87,7 @@ The following ngspice transient simulation illustrates the magnetization switchi
 
 ### Thermal activation
 
-Although thermal activation and a stochastic Langevin thermal field are relevant to STT-MRAM modeling, no thermal-field term is present in this `mtj_pma` implementation. The model is therefore deterministic; thermal switching probabilities are not represented by the equations above.
+No thermal-field term is present in this `mtj_pma` implementation. The model is therefore deterministic; thermal switching probabilities are not represented by the equations above.
 
 ## Quick Start
 
