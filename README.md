@@ -2,15 +2,15 @@
 
 # STT-MRAM Compact Model
 
-This repository provides a comprehensive description and compact modeling, via Verilog-A and OpenVAF chain, of a STT-MRAM Cell. The base version objective consist in creating a model of a single cell, using standard literature parameters and materials, with the derivation of foundamental equation done separately. Future version will elaborate a more complex model (see [Additional Improvements](#additional-improvements) section for more indications).
+This repository provides a comprehensive description and compact modeling, via Verilog-A and OpenVAF chain, of an STT-MRAM Cell. The base version objective consists in creating a model of a single cell, using standard literature parameters and materials, with the derivation of fundamental equations done separately. Future versions will elaborate a more complex model (see [Additional Improvements](#additional-improvements) section for more indications).
 
 ---
 
 ## Equations used
 
-This section explains the equations implemented in the model: `mtj_pma`. 
+This section explains the equations implemented in the model: `mtj_pma`.
 
-The model uses a cilindrical symmetry, which gives rise to a magnetization constant `m` only on the z axis. The free-layer magnetization is assumed to remain uniform (its state is described by the polar angle `theta`). 
+The model uses a cylindrical symmetry, which gives rise to a magnetization constant `m` only on the z axis. The free-layer magnetization is assumed to remain uniform (its state is described by the polar angle `theta`).
 
 The equations below describe the implemented model; in particular, the current version does not include stochastic thermal-field noise or full three-dimensional magnetization dynamics.
 
@@ -21,15 +21,11 @@ For a circular nanopillar of diameter `d`, the MTJ cross-sectional area is
 $$A = \frac{\pi d^2}{4}.$$
 
 The initial magnetization direction is chosen by `init_state`, with a small angular offset `theta_min` from either pole:
-$$\theta_0 = \begin{cases}
-\theta_{\min}, & \text{if init state} = 0,\\
-\pi-\theta_{\min}, & \text{if init state} = 1.
-\end{cases}$$
+$$\theta_0 = \begin{cases} \theta_{\min}, & \text{if init state} = 0,\\ \pi-\theta_{\min}, & \text{if init state} = 1. \end{cases}$$
 
 The Verilog-A state variable `V(n_theta)` represents an angular deviation in radians, so
 
 $$\theta = \theta_0 + V(n_{\theta}), \qquad m_z = \cos(\theta).$$
-
 
 ### Bias-dependent TMR and MTJ conductance
 
@@ -37,7 +33,7 @@ The voltage across the MTJ is $V_{MTJ}=V(p,n)$. The bias-dependent tunnel magnet
 
 $$\mathrm{TMR}_{eff}(V_{MTJ}) = \frac{\mathrm{TMR}_0}{1+(V_{MTJ}/V_h)^2}.$$
 
-Thus the TMR equals `TMR0` at zero bias and falls to half that value when $|V_{MTJ}|=V_h$. With the parallel-state resistance-area product `RA_P`, the parallel conductance is
+Thus the TMR equals `TMR0` at zero bias and falls to half that value when $\vert{}V_{MTJ}\vert{}=V_h$. With the parallel-state resistance-area product `RA_P`, the parallel conductance is
 
 $$G_P = \frac{A}{RA_P},$$
 
@@ -153,7 +149,7 @@ Physics-based compact model of an STT-MRAM cell targeting open-source SPICE simu
 - [ ] OpenVAF compilation & `ngspice` DC sweep testbench (P vs AP I–V curves)
 - [ ] LLGS magnetization dynamics (macrospin approximation)
 - [ ] Thermal stability & switching current verification
-- [ ] 
+
 ## Additional Improvements
 
 - Improve thermal-effect modeling
@@ -162,8 +158,6 @@ Physics-based compact model of an STT-MRAM cell targeting open-source SPICE simu
 - Validate parameters using experimental data
 
 ---
-
-
 
 ## References & Acknowledgments
 
