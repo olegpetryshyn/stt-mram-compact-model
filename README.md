@@ -53,8 +53,6 @@ Consequently, $m_z=+1$ gives $G_{eff}=G_P$ (parallel state), while $m_z=-1$ give
 
 $$I_{MTJ}=G_{eff}V_{MTJ}, \qquad J=\frac{I_{MTJ}}{A}.$$
 
-The sign of $J$ follows the circuit's `p`-to-`n` current convention and determines the sign of the torque in the implemented equation.
-
 ### Effective anisotropy and spin-transfer torque fields
 
 The effective perpendicular anisotropy field is calculated as
