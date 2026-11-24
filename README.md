@@ -8,35 +8,84 @@ This repository provides a comprehensive description and compact modeling, via V
 
 ## Equations used
 
-In this sections are formalized the equations used in the verilog-A model for the STT-MRAM cell's simulation. For more information about the assumptions and procedures used to derive the formualae, go to the [tecnical documentation](docs/images/STT_MRAM_thecnical_document.pdf).
+This section explains the equations implemented in the model: `mtj_pma`. 
 
-### LLG
+The model uses a cilindrical symmetry, which gives rise to a magnetization constant `m` only on the z axis. The free-layer magnetization is assumed to remain uniform (its state is described by the polar angle `theta`). 
 
-**Implicit:**
+The equations below describe the implemented model; in particular, the current version does not include stochastic thermal-field noise or full three-dimensional magnetization dynamics.
 
-$$\frac{d\mathbf{M}}{dt} = -\gamma \left( \mathbf{M} \times \mathbf{H}_{\text{eff}} \right) + \frac{\alpha}{M_s} \left( \mathbf{M} \times \frac{d\mathbf{M}}{dt} \right)$$
+### Geometry and magnetization state
 
-**Explicit:**
+For a circular nanopillar of diameter `d`, the MTJ cross-sectional area is
 
-$$\frac{d\mathbf{M}}{dt} = -\frac{\gamma}{1 + \alpha^2} \left( \mathbf{M} \times \mathbf{H}_{\text{eff}} \right) - \frac{\gamma \alpha}{(1 + \alpha^2) M_s} \left[ \mathbf{M} \times \left( \mathbf{M} \times \mathbf{H}_{\text{eff}} \right) \right]$$
+$$A = \frac{\pi d^2}{4}.$$
 
-**Gilbert parameter:**
+The initial magnetization direction is chosen by `init_state`, with a small angular offset `theta_min` from either pole:
+$$\theta_0 = \begin{cases}
+\theta_{\min}, & \text{if init state} = 0,\\
+\pi-\theta_{\min}, & \text{if init state} = 1.
+\end{cases}$$
 
-$$\alpha$$
+The Verilog-A state variable `V(n_theta)` represents an angular deviation in radians, so
 
-### Giant Tunnel Magnetoresitance
+$$\theta = \theta_0 + V(n_{\theta}), \qquad m_z = \cos(\theta).$$
 
-$$\text{GMR} = \frac{R_{AP} - R_P}{R_P}$$
 
-### Thermal activation effect simulation
+### Bias-dependent TMR and MTJ conductance
 
-$$\frac{d\mathbf{m}}{dt} = -\frac{\gamma}{1 + \alpha^2} \left[ \mathbf{m} \times \left( \mathbf{H}_{\text{eff}} + \mathbf{H}_{\text{th}} \right) \right] - \frac{\gamma \alpha}{1 + \alpha^2} \left( \mathbf{m} \times \left[ \mathbf{m} \times \left( \mathbf{H}_{\text{eff}} + \mathbf{H}_{\text{th}} \right) \right] \right)$$
+The voltage across the MTJ is $V_{MTJ}=V(p,n)$. The bias-dependent tunnel magnetoresistance ratio used by the model is
 
-**Discrete:**
+$$\mathrm{TMR}_{eff}(V_{MTJ}) = \frac{\mathrm{TMR}_0}{1+(V_{MTJ}/V_h)^2}.$$
 
-$$\mathbf{H}_{\text{th}} = \boldsymbol{\eta} \sqrt{\frac{2 \alpha k_B T}{\gamma \mu_0 M_s V \Delta t}}$$
+Thus the TMR equals `TMR0` at zero bias and falls to half that value when $|V_{MTJ}|=V_h$. With the parallel-state resistance-area product `RA_P`, the parallel conductance is
 
----
+$$G_P = \frac{A}{RA_P},$$
+
+and the antiparallel conductance is
+
+$$G_{AP} = \frac{G_P}{1+\mathrm{TMR}_{eff}}.$$
+
+The conductance is interpolated continuously according to the free-layer orientation:
+
+$$G_{eff} = \frac{G_P+G_{AP}}{2} + \frac{G_P-G_{AP}}{2}m_z.$$
+
+Consequently, $m_z=+1$ gives $G_{eff}=G_P$ (parallel state), while $m_z=-1$ gives $G_{eff}=G_{AP}$ (antiparallel state). The electrical current and current density are
+
+$$I_{MTJ}=G_{eff}V_{MTJ}, \qquad J=\frac{I_{MTJ}}{A}.$$
+
+The sign of $J$ follows the circuit's `p`-to-`n` current convention and determines the sign of the torque in the implemented equation.
+
+### Effective anisotropy and spin-transfer torque fields
+
+The effective perpendicular anisotropy field is calculated as
+
+$$H_{k,eff}=\frac{2K_i}{\mu_0 M_s t_{fl}}-M_s.$$
+
+The first term is the field associated with interfacial perpendicular anisotropy; subtracting $M_s$ represents the thin-film demagnetizing contribution in this simplified expression. A positive result corresponds to an out-of-plane easy axis. `H_keff` is expressed in A/m.
+
+The effective field associated with spin-transfer torque is
+
+$$H_{STT}=\frac{\hbar P J}{2e\mu_0 M_s t_{fl}},$$
+
+where $P$ is the spin-polarization factor, $e$ is the elementary charge, and $\hbar$ is the reduced Planck constant. This expression converts the current density through the junction into the torque-driving field used by the one-dimensional dynamics.
+
+### One-dimensional LLGS polar-angle dynamics
+
+The implemented polar-angle rate is
+
+$$\frac{d\theta}{dt}=\frac{\Gamma\mu_0}{1+\alpha^2}\sin(\theta)\left(H_{STT}-\alpha H_{k,eff}m_z\right).$$
+
+`GAMMA` is the gyromagnetic ratio and `alpha` is the Gilbert damping parameter. The term proportional to $H_{STT}$ describes current-driven switching; the term proportional to $\alpha H_{k,eff}m_z$ describes damping associated with the perpendicular anisotropy. The factor $\sin(\theta)$ is part of the polar-coordinate reduction. This is a reduced, one-dimensional macrospin equation, not the full vector LLG/LLGS equation.
+
+In Verilog-A, the internal electrical node `n_theta` is used as an analog state variable. Its branch equation
+
+$$\frac{dV(n\_theta)}{dt}=\frac{d\theta}{dt}$$
+
+is expressed through `ddt(V(n_theta)) - dtheta_dt`. A small leakage term (`1e-12 * V(n_theta)`) provides a DC path for numerical convergence. Additional boundary currents clamp the state variable when it would drive `theta` outside the allowed interval. The monitor output is `V(mz_out) = m_z`.
+
+### Thermal activation
+
+Although thermal activation and a stochastic Langevin thermal field are relevant to STT-MRAM modeling, no thermal-field term is present in this `mtj_pma` implementation. The model is therefore deterministic; thermal switching probabilities are not represented by the equations above.
 
 ## Quick Start
 
