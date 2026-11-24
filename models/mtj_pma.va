@@ -1,7 +1,15 @@
-`include "disciplines.vams"
-`include "constants.vams"
+`include "disciplines.vams" // Include the physical disciplines definitions
+`include "constants.vams" // include constant parameters (e.g., M_PI)
+
+
+
+// module: mtj_pma
+// description: 1D macrospin model of a perpendicular 
+// magnetic tunnel junction (p-MTJ)
 
 module mtj_pma(p, n, mz_out);
+
+    // Electrical terminals and monitor node
     inout p, n;
     output mz_out;
     electrical p, n, mz_out;
@@ -17,12 +25,12 @@ module mtj_pma(p, n, mz_out);
     parameter real alpha = 0.027    from (0:inf);     // Gilbert damping factor
     parameter real GAMMA = 1.76e11  from (0:inf);     // Gyromagnetic ratio [rad/(s*T)]
 
-    // Initial state: 0 = Parallel (P, mz ~ +1), 1 = Antiparallel (AP, mz ~ -1)
+    // Initial state and thermal fluctuation parameters
     parameter integer init_state = 0 from [0:1];
     parameter real theta_min = 1e-3  from (0:0.5);    // Thermal fluctuation floor [rad]
 
     // Electrical and transport parameters
-    parameter real TMR0  = 1.2      from [0:inf);     // Zero-bias TMR ratio
+    parameter real TMR0  = 1.2      from [0:inf);     // Zero-bias TMR ratio 
     parameter real RA_P  = 5e-12    from (0:inf);     // Resistance-area product (P) [Ohm*m^2]
     parameter real Vh    = 0.5      from (0:inf);     // Half-TMR bias voltage [V]
     parameter real P     = 0.58     from (0:1];       // Spin polarization factor
@@ -37,47 +45,94 @@ module mtj_pma(p, n, mz_out);
     real J, H_keff, H_stt, dtheta_dt;
 
     analog begin
+
+        // MTJ cross-sectional area
         area = 0.25 * `M_PI * d * d;
+
 
         // Initial angle offset from poles (0 or PI) to enable STT switching
         theta_0 = (init_state == 0) ? theta_min : (`M_PI - theta_min);
 
-        // State variable clamping within [theta_min, PI - theta_min]
+
+        // Polar angle theta 
         theta = theta_0 + V(n_theta);
+
+
+        // theta range within [theta_min, PI - theta_min]
+        // This is to avoid singularities in the LLGS equation 
         if (theta < theta_min)
             theta = theta_min;
         else if (theta > `M_PI - theta_min)
             theta = `M_PI - theta_min;
 
+
+        // Normalized magnetization component 
+        // (mz = M/Ms = (M_x^2 + M_y^2 + M_z^2)^(1/2)/Ms)
+        // due to a cylindrical symmetry, mz = cos(theta)
         mz = cos(theta);
 
-        // Bias-dependent TMR and Slonczewski conductance
+
+        // harness the voltage across the MTJ 
         v_mtj   = V(p, n);
+
+
+        // compute the effective TMR ratio (TMR_eff) using the bias-dependent model
         tmr_eff = TMR0 / (1.0 + pow(v_mtj / Vh, 2));
 
-        g_p   = area / RA_P;
-        g_ap  = g_p / (1.0 + tmr_eff);
-        g_eff = 0.5 * (g_p + g_ap) + 0.5 * (g_p - g_ap) * mz;
 
+        // Slonczewski conductances
+        g_p   = area / RA_P; // parallel 
+        g_ap  = g_p / (1.0 + tmr_eff); // anti-parallel
+        g_eff = 0.5 * (g_p + g_ap) + 0.5 * (g_p - g_ap) * mz;   // effective 
+
+
+        // MTJ current and current density
         i_mtj = g_eff * v_mtj;
         J     = i_mtj / area;
 
-        // Effective perpendicular anisotropy field & Slonczewski STT term
+
+        // Effective perpendicular anisotropy field: 
+        // the force driving the magnetization towards the easy axis (z-axis)
+        // H_keff has to be positive for the easy axis to be along the z-axis
         H_keff = (2.0 * Ki) / (MU0 * Ms * t_fl) - Ms;
+
+
+        // Spin-transfer torque effective field:
+        // the force driving the magnetization towards the pinned layer (z-axis)
         H_stt  = (HBAR * P * J) / (2.0 * Q_E * MU0 * Ms * t_fl);
 
-        // 1D macrospin LLGS polar angle dynamics
-        dtheta_dt = (GAMMA / (1.0 + alpha * alpha)) * sin(theta) * (H_stt - alpha * H_keff * mz);
 
-        // Electrical port and ODE integration (with anti-windup clamping & DC path)
-        I(p, n)    <+ i_mtj;
-        I(n_theta) <+ ddt(V(n_theta)) - dtheta_dt + 1e-12 * V(n_theta);
+        // 1D macrospin LLGS polar angle dynamics
+        dtheta_dt = (GAMMA * MU0 / (1.0 + pow(alpha, 2))) * sin(theta) * (H_stt - alpha * H_keff * mz);
+
+
+        /*
+         in order to avoid a build-up of the state variable V(n_theta) 
+         when the magnetization is at the poles (theta = 0 or PI),
+         an anti-windup clamping is implemented by:
+         - adding a small DC path (1e-12 * V(n_theta)) to the ODE integration of V(n_theta)
+         - adding a clamping current when the magnetization is at the poles 
+         
+         the DC term is to avoid singularity at t = 0 (V(n_theta) = 0).
+
+         the clamping term is to avoid the build-up of V(n_theta) which leads to 
+         a V(n_theta) that increases without bound when the magnetization is at the poles (theta = 0 or PI).
+        */
+
+
+        // Electrical port and ODE integration 
+        I(p, n)    <+ i_mtj; // add the MTJ current to the electrical ports
+        I(n_theta) <+ ddt(V(n_theta)) - dtheta_dt + 1e-12 * V(n_theta); // add a small DC path to avoid singularity
+       
+        // clamp the state variable V(n_theta) to avoid build-up
         if (theta_0 + V(n_theta) < theta_min)
-            I(n_theta) <+ 1e6 * (theta_0 + V(n_theta) - theta_min);
+            I(n_theta) <+ 1e6 * (theta_0 + V(n_theta) - theta_min); 
         else if (theta_0 + V(n_theta) > `M_PI - theta_min)
             I(n_theta) <+ 1e6 * (theta_0 + V(n_theta) - (`M_PI - theta_min));
 
+
         // Normalized out-of-plane magnetization monitor node
         V(mz_out)  <+ mz;
+
     end
 endmodule
