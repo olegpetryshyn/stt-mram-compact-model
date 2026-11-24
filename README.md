@@ -2,7 +2,7 @@
 
 # STT-MRAM Compact Model
 
-This repository provides a comprehensive description and compact modeling, via Verilog-A and OpenVAF chain, of an STT-MRAM Cell. The base version objective consists in creating a model of a single cell, using standard literature parameters and materials, with the derivation of fundamental equations done separately. Future versions will elaborate a more complex model (see [Additional Improvements](#additional-improvements) section for more indications).
+This repository provides a comprehensive description and compact modeling, via Verilog-A and OpenVAF chain, of an STT-MRAM Cell. The base version objective consists in creating a model of a single cell, with the aim to be used in open-source SPICE simulators.
 
 ---
 
@@ -10,7 +10,7 @@ This repository provides a comprehensive description and compact modeling, via V
 
 This section explains the equations implemented in the model: `mtj_pma`.
 
-The model uses a cylindrical symmetry, which gives rise to a magnetization constant `m` only on the z axis. The free-layer magnetization is assumed to remain uniform (its state is described by the polar angle `theta`).
+The model uses a cylindrical symmetry, which gives rise to a magnetization constant `m` only on the z axis. The free-layer magnetization is assumed to remain uniform (its state is described by the polar angle `theta`, while the azimuthal angle is omitted). In this approximation, the magnetization has no in-plane components and is represented only by $m_z=\cos\theta$.
 
 The equations below describe the implemented model; in particular, the current version does not include stochastic thermal-field noise or full three-dimensional magnetization dynamics.
 
@@ -76,6 +76,14 @@ In Verilog-A, the internal electrical node `n_theta` is used as an analog state 
 $$\frac{dV(n\_theta)}{dt}=\frac{d\theta}{dt}$$
 
 is expressed through `ddt(V(n_theta)) - dtheta_dt`. A small leakage term (`1e-12 * V(n_theta)`) provides a DC path for numerical convergence. Additional boundary currents clamp the state variable when it would drive `theta` outside the allowed interval. The monitor output is `V(mz_out) = m_z`.
+
+### Example switching waveform
+
+The following ngspice transient simulation illustrates the magnetization switching sequence under opposite voltage pulses. The blue trace is the applied voltage `v(in)` and the red trace is the normalized out-of-plane magnetization `v(mz)`: the device switches from the parallel state (P, $m_z=+1$) to the antiparallel state (AP, $m_z=-1$), and then back to the P state.
+
+<p align="center">
+  <img src="docs/switching_waveform.svg" alt="STT-MRAM P-to-AP-to-P switching waveform" width="850">
+</p>
 
 ### Thermal activation
 
@@ -162,7 +170,7 @@ Physics-based compact model of an STT-MRAM cell targeting open-source SPICE simu
 ## References & Acknowledgments
 
 ### Theoretical Foundation
-- **Prof. Aurélien Manchon — *Introduction to Spintronics* (Lecture Series):** Primary reference for the physical derivation of magnetostatics, interfacial perpendicular magnetic anisotropy (PMA), the Landau-Lifshitz-Gilbert (LLG) equation, spin-dependent tunneling, and Spin-Transfer Torque (STT) / Spin-Orbit Torque (SOT) dynamics.
+- **Prof. Aurélien Manchon — *Introduction to Spintronics* (Lecture Series):** Primary reference for the physical derivation of magnetostatics, interfacial perpendicular magnetic anisotropy (PMA), and spin-transfer torque.
 
 ### Physical & Compact Modeling Equations
 - **Magnetization Dynamics:** Landau-Lifshitz-Gilbert-Slonczewski (LLGS) macrospin formulation in Cartesian coordinates.
