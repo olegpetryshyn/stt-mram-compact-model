@@ -4,8 +4,7 @@
 
 
 // module: mtj_pma
-// description: 1D macrospin model of a perpendicular 
-// magnetic tunnel junction (p-MTJ)
+// description: 1D macrospin model of a perpendicular magnetic tunnel junction (p-MTJ)
 
 module mtj_pma(p, n, mz_out);
 
@@ -67,13 +66,13 @@ module mtj_pma(p, n, mz_out);
 
 
         // Normalized magnetization component 
-        // (mz = M/Ms = (M_x^2 + M_y^2 + M_z^2)^(1/2)/Ms)
+        // (mz = M/Ms)
         // due to a cylindrical symmetry, mz = cos(theta)
         mz = cos(theta);
 
 
-        // harness the voltage across the MTJ 
-        v_mtj   = V(p, n);
+        // voltage probe across the MTJ
+        v_mtj  = V(p, n);
 
 
         // compute the effective TMR ratio (TMR_eff) using the bias-dependent model
@@ -81,8 +80,8 @@ module mtj_pma(p, n, mz_out);
 
 
         // Slonczewski conductances
-        g_p   = area / RA_P; // parallel 
-        g_ap  = g_p / (1.0 + tmr_eff); // anti-parallel
+        g_p   = area / RA_P;                                    // parallel 
+        g_ap  = g_p / (1.0 + tmr_eff);                          // anti-parallel
         g_eff = 0.5 * (g_p + g_ap) + 0.5 * (g_p - g_ap) * mz;   // effective 
 
 
@@ -107,24 +106,25 @@ module mtj_pma(p, n, mz_out);
 
 
         /*
-         in order to avoid a build-up of the state variable V(n_theta) 
-         when the magnetization is at the poles (theta = 0 or PI),
-         an anti-windup clamping is implemented by:
-         - adding a small DC path (1e-12 * V(n_theta)) to the ODE integration of V(n_theta)
-         - adding a clamping current when the magnetization is at the poles 
-         
-         the DC term is to avoid singularity at t = 0 (V(n_theta) = 0).
-
-         the clamping term is to avoid the build-up of V(n_theta) which leads to 
-         a V(n_theta) that increases without bound when the magnetization is at the poles (theta = 0 or PI).
+         * ELECTRICAL PORT AND ODE IMPLEMENTATION
+         *
+         * To avoid a build-up of the state variable V(n_theta) when the
+         * magnetization is at the poles (theta = 0 or PI), an anti-windup
+         * clamp is implemented by:
+         * - Adding a small DC path (1e-12 * V(n_theta)) to the ODE integration
+         *   of V(n_theta).
+         * - Adding a clamping current when the magnetization is at the poles.
+         *
+         * The DC term avoids a singularity at t = 0 (V(n_theta) = 0).
+         * The clamping term prevents V(n_theta) from increasing without bound
+         * when the magnetization is at the poles (theta = 0 or PI).
         */
 
-
-        // Electrical port and ODE integration 
-        I(p, n)    <+ i_mtj; // add the MTJ current to the electrical ports
-        I(n_theta) <+ ddt(V(n_theta)) - dtheta_dt + 1e-12 * V(n_theta); // add a small DC path to avoid singularity
        
-        // clamp the state variable V(n_theta) to avoid build-up
+        I(p, n)    <+ i_mtj;                                        
+        I(n_theta) <+ ddt(V(n_theta)) - dtheta_dt + 1e-12 * V(n_theta); // small DC path 
+       
+        // clamp the state variable
         if (theta_0 + V(n_theta) < theta_min)
             I(n_theta) <+ 1e6 * (theta_0 + V(n_theta) - theta_min); 
         else if (theta_0 + V(n_theta) > `M_PI - theta_min)
