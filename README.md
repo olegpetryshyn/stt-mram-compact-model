@@ -121,7 +121,7 @@ The constants used in the Verilog-A model follow standard literature values, des
 | :--- | :--- | :--- | :--- | :--- |
 | Nanopillar diameter | d | 40e-9 | $\text{m}$ | Valid in the macrospin regime ($d < 50\text{ nm}$) |
 | Free layer thickness | t_fl | 1.3e-9 | $\text{m}$ | Thickness of the CoFeB free layer |
-| Saturation magnetization | Ms | 1.257e6 | $\text{A/m}$ | Equivalent to $\mu_0 M_s = 1.58\text{ T}$ |
+| Saturation magnetization | Ms | 1.18e6 | $\text{A/m}$ | Equivalent to $\mu_0 M_s = 1.58\text{ T}$ |
 | Interfacial anisotropy | Ki | 1.3e-3 | $\text{J/m}^2$ | CoFeB/MgO interfacial energy density |
 | Gilbert damping | alpha | 0.027 | — | Effective damping constant |
 | Gyromagnetic ratio | GAMMA | 1.76e11 | $\text{rad}/(\text{s}\cdot\text{T})$ | Electron gyromagnetic constant |
@@ -152,10 +152,9 @@ Physics-based compact model of an STT-MRAM cell targeting open-source SPICE simu
 
 ## Current Implementation
 - [x] Static MTJ resistance model (`src/mtj_static.va`) with bias-dependent TMR ($V_h$) and Slonczewski conductance formulation.
-
+- [x] OpenVAF compilation & `ngspice` DC sweep testbench (P vs AP I–V curves)
+- [x] LLGS magnetization dynamics (macrospin approximation)
 ## Roadmap
-- [ ] OpenVAF compilation & `ngspice` DC sweep testbench (P vs AP I–V curves)
-- [ ] LLGS magnetization dynamics (macrospin approximation)
 - [ ] Thermal stability & switching current verification
 
 ## Additional Improvements
@@ -175,7 +174,7 @@ Physics-based compact model of an STT-MRAM cell targeting open-source SPICE simu
 ### Physical & Compact Modeling Equations
 - **Magnetization Dynamics:** Landau-Lifshitz-Gilbert-Slonczewski (LLGS) macrospin formulation in Cartesian coordinates.
 - **Tunnel Magnetoresistance (TMR):** Jullière model extended with bias-voltage dependence for parallel ($R_P$) and antiparallel ($R_{AP}$) states.
-- **Thermal Effects:** Néel-Brown thermal activation model ($\Delta = E_b / k_B T$) and Langevin stochastic thermal field.
+- **Thermal Effects (planned):** Néel-Brown thermal activation model ($\Delta = E_b / k_B T$) and Langevin stochastic thermal field.
 
 ### Toolchain & Reference Frameworks
 - **OpenVAF:** Verilog-A compiler generating OSDI-compliant device binaries (`.osdi`).
